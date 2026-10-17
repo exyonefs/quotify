@@ -51,7 +51,7 @@ export function manifestKey(url: string): string {
  * 未显式配置 `DATA_MANIFEST_URL` 时使用它；显式配置为空字符串则表示关闭清单。
  */
 export const DEFAULT_MANIFEST_URL =
-  'https://raw.githubusercontent.com/exyone-js/quotify-data/main/sources.json';
+  'https://raw.githubusercontent.com/exyonefs/quotify-data/main/sources.json';
 
 /**
  * 默认静态来源：留空表示「默认不配置静态来源」，来源列表完全由清单文件解析得到。

@@ -17,7 +17,7 @@ DATA_SOURCES = '[]'
 # 清单里的来源会与上面的 DATA_SOURCES 合并（去重、截断到 20 个）；
 # 增减来源只需改这个清单文件，不必重新部署 Worker。显式留空则关闭清单。
 # Fork 后请换成你自己的仓库地址，否则你改不动数据。
-DATA_MANIFEST_URL = "https://raw.githubusercontent.com/exyone-js/quotify-data/main/sources.json"
+DATA_MANIFEST_URL = "https://raw.githubusercontent.com/exyonefs/quotify-data/main/sources.json"
 # 来源主机白名单（逗号分隔，可选）。留空表示不限制主机；
 # 配置后，来源清单里解析出的地址必须命中白名单才允许加载（防 SSRF / 清单被篡改）。
 # 公开仓库场景下建议至少锁到 raw.githubusercontent.com。
@@ -69,7 +69,7 @@ head_sampling_rate = 0.1
 [env.staging.vars]
 ENVIRONMENT = "staging"
 DATA_SOURCES = '[]'
-DATA_MANIFEST_URL = "https://raw.githubusercontent.com/exyone-js/quotify-data/main/sources.json"
+DATA_MANIFEST_URL = "https://raw.githubusercontent.com/exyonefs/quotify-data/main/sources.json"
 DATA_SOURCE_HOSTS = ""
 DATA_TTL = "300"
 ROOT_REDIRECT = "/api/quotes/"
