@@ -31,7 +31,7 @@
    │  data.json × n（每个来源格式相同）
    ▼
 Cloudflare Worker (quotify-api)
-   │  1. 进程内热缓存（60s，避免每请求重复解析）—— 命中即返回
+   │  1. 进程内热缓存（与 DATA_TTL 对齐，避免每请求重复解析）—— 命中即返回
    │  2. 解析来源列表 = DATA_SOURCES + 清单（去重、截断到 20 个）
    │  3. 并发查各来源的 KV 缓存 (quotify:data:v1:<URL 指纹>)
    │  4. 未命中 / 过期 → 并发回源
@@ -46,7 +46,7 @@ API 响应
 
 > 热缓存以 isolate 为单位，只用于省掉「读 KV + 全量解析」，不承担一致性保证；
 > 管理端 `/refresh` 会用「重新加载后的结果」**覆盖**当前 isolate 的副本。
-> 多 isolate 下数据最多陈旧一个热缓存 TTL（60s）。
+> 热缓存 TTL 与 `DATA_TTL` 对齐（默认 300s），多 isolate 下数据最多陈旧一个 `DATA_TTL`。
 
 ## 目录结构
 
@@ -82,9 +82,10 @@ quotify/
 │   ├── compat.test.ts        # Hitokoto 兼容层
 │   ├── data.test.ts          # 示例数据集校验
 │   └── test-token.ts         # 测试用 ADMIN_TOKEN（与 vitest.config.ts 共用）
-├── data/
-│   ├── data.json             # 示例数据集（推送到 quotify-data 仓库）
-│   └── schema.json           # 数据集 JSON Schema（供外部工具复用）
+├── data/                     # 按分类拆分的数据集（film / internet / literature / philosophy / technology / wisdom）
+├── scripts/
+│   └── normalize-ids.mjs     # 数据集 id 规范化脚本（固定 8 位十六进制 + 全局去重 + 排序）
+├── sources.json              # 来源清单（列出全部数据集文件地址）
 ├── .github/workflows/ci.yml  # CI：类型生成 + 依赖审计 + 风格 + 静态检查 + typecheck + test
 ├── .github/dependabot.yml    # 依赖自动升级
 ├── eslint.config.js / .prettierrc.json / .prettierignore
@@ -260,28 +261,37 @@ quotify/
 `GET /v1/hitokoto` 以 [Hitokoto](https://developer.hitokoto.cn/) 的契约返回**裸对象**（不套统一外壳），
 便于既有的一言客户端零改动迁移。映射关系：
 
-| Hitokoto 字段                          | 来源                                            |
-| :------------------------------------- | :---------------------------------------------- |
-| `id`                                   | 由 `quote.id` 指纹稳定派生的数字                |
-| `uuid`                                 | `quote.id`                                      |
-| `hitokoto`                             | `quote.content`                                 |
-| `type`                                 | `quote.category` 映射到的分类码（未收录 → `g`） |
-| `from`                                 | `quote.source`（缺省空串）                      |
-| `from_who`                             | `quote.author`（缺省空串）                      |
-| `creator` / `creator_uid` / `reviewer` | 固定为 `quotify` / `0` / `0`                    |
-| `commit_from`                          | 固定 `api`                                      |
-| `created_at`                           | 数据集的 `updated_at`                           |
-| `length`                               | `content` 的长度                                |
+| Hitokoto 字段                          | 来源                                                           |
+| :------------------------------------- | :------------------------------------------------------------- |
+| `id`                                   | 由 `quote.id` 的 32 位指纹派生的**正整数**（稳定、不含 `0`）   |
+| `uuid`                                 | `quote.id`（统一为 8 位小写十六进制）                          |
+| `hitokoto`                             | `quote.content`                                                |
+| `type`                                 | `quote.category` 映射到的分类码（未收录 → `g`）                |
+| `from`                                 | `quote.source`；缺失时回退为 `未知出处`（不会是空串）          |
+| `from_who`                             | `quote.author`；缺失时回退为 `佚名`（不会是空串）              |
+| `creator` / `creator_uid` / `reviewer` | 固定为 `quotify` / `1` / `1`（数字，便于客户端渲染提交者信息） |
+| `commit_from`                          | 固定 `api`                                                     |
+| `created_at`                           | 数据集 `updated_at` 转换出的 **Unix 秒级时间戳字符串**         |
+| `length`                               | `hitokoto` 的字符数（按 Unicode 码点计，emoji 算 1 个）        |
+
+> 所有字段**始终有实际值**：不会出现 `null`、空串或 `NaN`。缺失的出处 / 作者使用中文占位，
+> `created_at` 严格遵循官方契约的「时间戳字符串」格式（早期实现直接透传 ISO 时间，按整数解析会得到 `NaN`）。
 
 分类码沿用 `a`–`l`：动画 `a`、漫画 `b`、游戏 `c`、文学 `d`、原创 `e`、网络 `f`、其他 `g`、
 影视 `h`、诗词 `i`、网易云 `j`、哲学 `k`、抖机灵 `l`。
+数据集中使用的中文别名会被归入最接近的码（`哲理` / `哲思` → `k`，`科技` / `科学` → `g`，
+`古诗` → `i`，`电影` → `h` 等），未收录分类统一归到 `g`。
 
 | 参数                        | 默认   | 说明                                                       |
 | :-------------------------- | :----- | :--------------------------------------------------------- |
 | `c`                         | 无     | 分类码（`a`–`l`），多个用逗号分隔（OR）                    |
 | `encode`                    | `json` | `json` / `text` / `js`（JSONP）                            |
 | `callback`                  | 无     | `encode=js` 时**必填**，必须是合法 JS 标识符（防脚本注入） |
-| `min_length` / `max_length` | 无     | 按 `content` 长度过滤                                      |
+| `min_length` / `max_length` | 无     | 按字符数过滤（与返回的 `length` 口径一致）                 |
+| `charset`                   | 无     | 仅为兼容既有客户端而接受；响应始终为 UTF-8，建议省略       |
+
+兼容层内部按分类码预分桶并记忆化长度，随机抽取不再复制整个数据集；
+即使数据量增长，单次请求的过滤成本也只与命中分类的条目数相关。
 
 ```bash
 curl "$BASE/v1/hitokoto?c=d&encode=json"
@@ -294,7 +304,7 @@ curl "$BASE/v1/hitokoto?encode=js&callback=hitokoto_cb"
 
 ## 数据仓库格式
 
-数据集放在独立仓库 **`quotify-data`**：按 `category` 拆分到 `data/` 下的多个文件，
+数据集放在独立仓库 **`quotify-data`**：按 `category` 拆分到 `data/` 下的多个文件（注：为方便统一管理，现已合并进同一个项目仓库），
 根目录的 `sources.json`（**来源清单**）列出这些文件的地址。
 
 本项目的默认配置就是这样——`DATA_SOURCES` 留空、`DATA_MANIFEST_URL` 指向该清单，
@@ -318,10 +328,10 @@ quotify-data/
 ```json
 {
   "version": 1,
-  "updated_at": "2026-09-26T12:00:00Z",
+  "updated_at": "2026-10-30T08:44:08Z",
   "quotes": [
     {
-      "id": "e1f3a2",
+      "id": "3f8c1d7a",
       "content": "人生如逆旅，我亦是行人。",
       "source": "临江仙·送钱穆父",
       "author": "苏轼",
@@ -341,9 +351,20 @@ quotify-data/
 - 非法数据直接返回 `500` 并记录日志，**不会**静默丢弃，也**不会**写入 KV。
 - 多来源合并时按 `id` **去重**（保留靠前的来源），重复条目数记在 `/api/admin/stats` 的 `duplicates` 里。
 
-本仓库 `data/data.json` 是一份可直接推送的示例数据集（10 条），并且**已被纳入 CI 校验**
-（`npm run validate:data`，见 `tests/data.test.ts`）；`data/schema.json` 是等价的 JSON Schema，
-供编辑器与外部工具复用。
+本仓库 `data/` 下的 6 个分类文件就是线上数据的事实来源，**全部纳入 CI 校验**
+（`npm run validate:data`，见 `tests/data.test.ts`）：除运行时校验外，还会检查
+`id` 是否为 **8 位小写十六进制**、是否跨文件全局唯一、是否按升序排列。
+
+### id 规范化脚本
+
+```bash
+npm run data:ids        # 重排 data/*.json 的 id（固定 8 位十六进制、全局去重、文件内升序）
+npm run data:ids:check  # 只校验，未规范化时以非 0 退出（适合放进 CI / pre-commit）
+```
+
+id 由 `content + author + source` 的 FNV-1a 指纹派生：同一份数据重复执行结果完全一致，
+改动正文才需要新 id；发生冲突时按确定性盐值继续派生，因此不会出现重复。
+脚本仅在内容确实变化时回写文件，并同步更新该文件的 `updated_at`。
 
 KV 键设计：
 
@@ -397,19 +418,21 @@ cp .dev.vars.example .dev.vars
 npm run dev
 
 # 需要真实数据时，把 DATA_SOURCES 指向一个可访问的地址，例如本地静态文件服务
-node -e "const http=require('http'),fs=require('fs');http.createServer((q,s)=>{s.setHeader('content-type','application/json');s.end(fs.readFileSync('data/data.json'))}).listen(8788)"
+node -e "const http=require('http'),fs=require('fs');http.createServer((q,s)=>{s.setHeader('content-type','application/json');s.end(fs.readFileSync('data/film.json'))}).listen(8788)"
 npx wrangler dev --var 'DATA_SOURCES:["http://127.0.0.1:8788/data.json"]'
 ```
 
 其它脚本：
 
 ```bash
-npm test             # vitest run，在 Workers 运行时中执行全部测试
-npm run typecheck    # tsc --noEmit
-npm run lint         # ESLint 静态检查（npm run lint:fix 自动修复）
-npm run format       # Prettier 格式化（npm run format:check 只检查）
-npm run validate:data # 校验 data/data.json
-npm run cf-typegen   # 修改 wrangler.toml 后重新生成 worker-configuration.d.ts
+npm test              # vitest run，在 Workers 运行时中执行全部测试
+npm run typecheck     # tsc --noEmit
+npm run lint          # ESLint 静态检查（npm run lint:fix 自动修复）
+npm run format        # Prettier 格式化（npm run format:check 只检查）
+npm run validate:data # 校验 data/*.json（格式 + id 规范）
+npm run data:ids      # 规范化 data/*.json 的 id（固定 8 位十六进制、全局去重、升序）
+npm run data:ids:check # 只校验 id 是否已规范化
+npm run cf-typegen    # 修改 wrangler.toml 后重新生成 worker-configuration.d.ts
 ```
 
 > `worker-configuration.d.ts` 由 `wrangler types` 生成（包含 `KVNamespace`、`RateLimit` 等运行时类型
@@ -434,8 +457,8 @@ npm run cf-typegen   # 修改 wrangler.toml 后重新生成 worker-configuration
 **推荐按 `category` 拆分**到一个子目录（如 `data/`），一个分类一个文件，格式见上文「数据仓库格式」——
 **根字段必须是 `quotes`**，每条记录至少要有非空的 `id` 与 `content`。
 
-可以直接复制本仓库的 [data/data.json](data/data.json) 当**单文件**模板，
-或参考作者仓库 `quotify-data` 的**按分类拆分**结构。
+可以直接参考本仓库 [data/film.json](data/film.json) 的**单文件**结构，
+或按 `data/` 下的**按分类拆分**结构组织自己的数据。
 
 > `wrangler.toml` 中 `DATA_SOURCES` 的注释写着「任意公网可访问、且返回符合本项目数据格式的 JSON 的链接都可以」——
 > 也就是说数据集**不一定要放在 GitHub**，你自己的静态服务器 / 对象存储同样可行，只要 URL 公网可读。
@@ -640,7 +663,7 @@ curl -H "Authorization: Bearer $ADMIN_TOKEN" "$BASE/api/admin/stats"
 
 ## 生产验证清单
 
-1. `npm test` —— 全部用例通过（当前 138 个）。
+1. `npm test` —— 全部用例通过（当前 142 个）。
 2. `npm run typecheck` —— 无类型错误。
 3. `npm run lint && npm run format:check` —— 无静态检查 / 风格问题。
 4. `curl -i "$BASE/"` —— 返回 `302` 且 `Location` 指向 `/api/quotes/`。

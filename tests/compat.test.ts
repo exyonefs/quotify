@@ -24,6 +24,14 @@ const DATASET = {
       category: '哲学',
     },
     { id: 'q3', content: '短。', category: '其他' },
+    { id: 'q4', content: '科技改变生活。', category: '科技' },
+    {
+      id: 'q5',
+      content: '上善若水。',
+      source: '道德经',
+      author: '老子',
+      category: '哲理',
+    },
   ],
 };
 
@@ -91,30 +99,63 @@ describe('GET /v1/hitokoto（Hitokoto 兼容层）', () => {
 
     const body = (await res.json()) as Hitokoto;
     expect(typeof body.id).toBe('number');
+    expect(body.id).toBeGreaterThan(0);
     expect(typeof body.uuid).toBe('string');
+    expect(body.uuid.length).toBeGreaterThan(0);
     expect(typeof body.hitokoto).toBe('string');
     expect(body.hitokoto.length).toBeGreaterThan(0);
     expect(body.length).toBe(body.hitokoto.length);
     expect(body.creator).toBe('quotify');
-    expect(body.created_at).toBe(DATASET.updated_at);
+    expect(body.creator_uid).toBeGreaterThan(0);
+    expect(body.reviewer).toBeGreaterThan(0);
+    expect(body.commit_from).toBe('api');
+    expect(Array.from(body.hitokoto).length).toBe(body.length);
     expect(typeof body.from).toBe('string');
+    expect(body.from.length).toBeGreaterThan(0);
     expect(typeof body.from_who).toBe('string');
+    expect(body.from_who.length).toBeGreaterThan(0);
+    expect(body.type).toMatch(/^[a-l]$/);
   });
 
-  it('分类码与 category 正确映射', async () => {
+  it('created_at 是 Unix 秒级时间戳（字符串），而不是 ISO 时间', async () => {
+    const res = await SELF.fetch(`${BASE}/v1/hitokoto`);
+    const body = (await res.json()) as Hitokoto;
+
+    expect(body.created_at).toBe(String(Math.floor(Date.parse(DATASET.updated_at) / 1000)));
+    expect(Number.isInteger(Number(body.created_at))).toBe(true);
+  });
+
+  it('分类码与 category 正确映射（含 哲理 → k）', async () => {
     const res = await SELF.fetch(`${BASE}/v1/hitokoto?c=k`);
     const body = (await res.json()) as Hitokoto;
 
     expect(body.type).toBe('k');
-    expect(body.uuid).toBe('q2');
+    expect(['q2', 'q5']).toContain(body.uuid);
   });
 
-  it('未收录的分类归到 g（其他）', async () => {
+  it('未收录 / 别名分类归到 g（其他）', async () => {
     const res = await SELF.fetch(`${BASE}/v1/hitokoto?c=g`);
     const body = (await res.json()) as Hitokoto;
 
     expect(body.type).toBe('g');
-    expect(body.uuid).toBe('q3');
+    expect(['q3', 'q4']).toContain(body.uuid);
+  });
+
+  it('缺失出处 / 作者时返回明确的占位值，而不是空串', async () => {
+    // q3：既无 source 也无 author，长度 2，可被 max_length 精确定位。
+    const fallback = (await (
+      await SELF.fetch(`${BASE}/v1/hitokoto?c=g&max_length=2`)
+    ).json()) as Hitokoto;
+    expect(fallback.uuid).toBe('q3');
+    expect(fallback.from).toBe('未知出处');
+    expect(fallback.from_who).toBe('佚名');
+
+    // q4：分类写作「科技」，应归到 g（其他），长度 7。
+    const alias = (await (
+      await SELF.fetch(`${BASE}/v1/hitokoto?c=g&min_length=7&max_length=7`)
+    ).json()) as Hitokoto;
+    expect(alias.uuid).toBe('q4');
+    expect(alias.type).toBe('g');
   });
 
   it('非法分类码返回 400', async () => {
@@ -160,10 +201,12 @@ describe('GET /v1/hitokoto（Hitokoto 兼容层）', () => {
   });
 
   it('同一条目的数字 id 稳定不变', async () => {
-    const first = (await (await SELF.fetch(`${BASE}/v1/hitokoto?c=k`)).json()) as Hitokoto;
+    // c=d 只有 q1 一条，避免随机抽到不同条目导致误判。
+    const first = (await (await SELF.fetch(`${BASE}/v1/hitokoto?c=d`)).json()) as Hitokoto;
     invalidateMemoryCache();
-    const second = (await (await SELF.fetch(`${BASE}/v1/hitokoto?c=k`)).json()) as Hitokoto;
+    const second = (await (await SELF.fetch(`${BASE}/v1/hitokoto?c=d`)).json()) as Hitokoto;
 
+    expect(first.uuid).toBe('q1');
     expect(first.id).toBe(second.id);
     expect(first.uuid).toBe(second.uuid);
   });

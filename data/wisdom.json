@@ -1,0 +1,46 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-30T08:44:08Z",
+  "quotes": [
+    {
+      "id": "0fc6570b",
+      "content": "Be the change that you wish to see in the world.",
+      "source": "常被引用的格言",
+      "author": "圣雄甘地",
+      "category": "哲理",
+      "tags": ["行动", "改变", "经典"]
+    },
+    {
+      "id": "295aa92d",
+      "content": "The best time to plant a tree was 20 years ago. The second best time is now.",
+      "source": "中国谚语英译/网络流行",
+      "author": "佚名",
+      "category": "哲理",
+      "tags": ["行动", "时机", "励志"]
+    },
+    {
+      "id": "7e18d769",
+      "content": "The greatest glory in living lies not in never falling, but in rising every time we fall.",
+      "source": "自传与演讲",
+      "author": "纳尔逊·曼德拉",
+      "category": "哲理",
+      "tags": ["坚韧", "失败", "励志"]
+    },
+    {
+      "id": "a1268468",
+      "content": "不要试图去教猪唱歌，不但没有结果，还会惹猪不高兴。",
+      "source": "管理寓言/网络",
+      "author": "佚名",
+      "category": "哲理",
+      "tags": ["管理", "幽默", "人际"]
+    },
+    {
+      "id": "c42c57bd",
+      "content": "If you want to go fast, go alone. If you want to go far, go together.",
+      "source": "非洲谚语",
+      "author": "佚名",
+      "category": "哲理",
+      "tags": ["合作", "人生", "谚语"]
+    }
+  ]
+}

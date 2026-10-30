@@ -1,0 +1,8 @@
+[
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/internet.json",
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/literature.json",
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/technology.json",
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/philosophy.json",
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/film.json",
+  "https://raw.githubusercontent.com/exyonefs/quotify/main/data/wisdom.json"
+]

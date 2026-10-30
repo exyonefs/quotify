@@ -8,7 +8,7 @@ export interface Quote {
   tags?: string[];
 }
 
-/** GitHub 仓库 `quotify-data/data.json` 的完整结构。 */
+/** GitHub 仓库 `quotify/data` 目录下 `json` 文件的完整结构。 */
 export interface QuoteDataset {
   version: number;
   updated_at: string;

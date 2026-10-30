@@ -1,0 +1,142 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-30T08:44:08Z",
+  "quotes": [
+    {
+      "id": "13e4b566",
+      "content": "不积跬步，无以至千里；不积小流，无以成江海。",
+      "source": "劝学",
+      "author": "荀子",
+      "category": "哲学",
+      "tags": ["学习", "积累", "经典"]
+    },
+    {
+      "id": "419713fc",
+      "content": "天行健，君子以自强不息。",
+      "source": "周易·乾卦",
+      "author": "佚名",
+      "category": "哲学",
+      "tags": ["古典", "励志", "周易"]
+    },
+    {
+      "id": "50b81dfa",
+      "content": "He who has a why to live can bear almost any how.",
+      "source": "偶像的黄昏",
+      "author": "弗里德里希·尼采",
+      "category": "哲学",
+      "tags": ["意义", "生存", "经典"]
+    },
+    {
+      "id": "7777513f",
+      "content": "己所不欲，勿施于人。",
+      "source": "论语·卫灵公",
+      "author": "孔子",
+      "category": "哲学",
+      "tags": ["儒家", "处世", "经典"]
+    },
+    {
+      "id": "7c22f611",
+      "content": "知识就是力量。",
+      "source": "新工具",
+      "author": "弗朗西斯·培根",
+      "category": "哲学",
+      "tags": ["知识", "力量", "经典"]
+    },
+    {
+      "id": "7d17106b",
+      "content": "知是行之始，行是知之成。",
+      "source": "传习录",
+      "author": "王阳明",
+      "category": "哲学",
+      "tags": ["哲学", "人生"]
+    },
+    {
+      "id": "86ba5d4f",
+      "content": "我思故我在。",
+      "source": "方法论",
+      "author": "笛卡尔",
+      "category": "哲学",
+      "tags": ["哲学", "认识论"]
+    },
+    {
+      "id": "8c5a6378",
+      "content": "人是生而自由的，却无往不在枷锁之中。",
+      "source": "社会契约论",
+      "author": "让-雅克·卢梭",
+      "category": "哲学",
+      "tags": ["自由", "社会", "经典"]
+    },
+    {
+      "id": "9bf06e9d",
+      "content": "人生的意义在于你赋予它的意义。",
+      "source": "存在主义相关论述",
+      "author": "让-保罗·萨特",
+      "category": "哲学",
+      "tags": ["存在主义", "意义", "自由"]
+    },
+    {
+      "id": "a0ba6dd6",
+      "content": "道可道，非常道；名可名，非常名。",
+      "source": "道德经",
+      "author": "老子",
+      "category": "哲学",
+      "tags": ["道家", "玄理", "经典"]
+    },
+    {
+      "id": "a3596671",
+      "content": "上善若水，水善利万物而不争。",
+      "source": "道德经",
+      "author": "老子",
+      "category": "哲学",
+      "tags": ["道家", "处世", "柔弱"]
+    },
+    {
+      "id": "b6c24b73",
+      "content": "We are what we repeatedly do. Excellence, then, is not an act, but a habit.",
+      "source": "常被归于亚里士多德",
+      "author": "亚里士多德（或威尔·杜兰特总结）",
+      "category": "哲学",
+      "tags": ["习惯", "卓越", "实践"]
+    },
+    {
+      "id": "c5e8b1a0",
+      "content": "The unexamined life is not worth living.",
+      "source": "申辩篇",
+      "author": "苏格拉底",
+      "category": "哲学",
+      "tags": ["反思", "人生", "经典"]
+    },
+    {
+      "id": "cbfea206",
+      "content": "That which does not kill us makes us stronger.",
+      "source": "偶像的黄昏",
+      "author": "弗里德里希·尼采",
+      "category": "哲学",
+      "tags": ["尼采", "意志", "成长"]
+    },
+    {
+      "id": "e557ac13",
+      "content": "或许在另一个平行世界里，lyc 和 lcz 不仅没有绝交，而且成为了恋人，最后还结婚了。",
+      "source": "Epigram 开发者",
+      "author": "exyone",
+      "category": "哲学",
+      "tags": ["人生", "自嘲"]
+    },
+    {
+      "id": "ecacf17b",
+      "content": "The only true wisdom is in knowing you know nothing.",
+      "source": "柏拉图对话录记载",
+      "author": "苏格拉底",
+      "category": "哲学",
+      "tags": ["智慧", "谦逊", "苏格拉底"]
+    },
+    {
+      "id": "f3e6527f",
+      "content": "认识你自己。",
+      "source": "德尔斐神庙箴言",
+      "author": "苏格拉底",
+      "category": "哲学",
+      "tags": ["哲学", "人生"]
+    }
+  ]
+}

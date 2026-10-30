@@ -17,11 +17,28 @@ function shuffle(list: Quote[]): Quote[] {
 /**
  * 随机取 n 条，保证不重复。
  *
- * 采用「部分 Fisher–Yates」：只在副本的前 n 个位置做交换，
- * 复杂度稳定为 O(n)，且不会像拒绝采样那样在高填充率下反复重试。
+ * 三种策略按填充率切换，避免「只取 1 条却复制整个池」这种最常见的浪费：
+ * - `n >= 总量`：洗牌后全量返回；
+ * - `n` 远小于总量：只记录命中的下标（拒绝采样），不复制原数组；
+ * - 其余情况：部分 Fisher–Yates，复杂度稳定为 O(n)，不会反复重试。
+ *
+ * 任何情况下都不修改原数组，返回的顺序是随机的。
  */
 export function randomPick(list: Quote[], n: number): Quote[] {
+  if (n <= 0 || list.length === 0) return [];
   if (n >= list.length) return shuffle(list);
+
+  if (n === 1) {
+    return [list[Math.floor(Math.random() * list.length)] as Quote];
+  }
+
+  if (n * 4 <= list.length) {
+    const indexes = new Set<number>();
+    while (indexes.size < n) {
+      indexes.add(Math.floor(Math.random() * list.length));
+    }
+    return [...indexes].map((index) => list[index] as Quote);
+  }
 
   const pool = [...list];
   for (let i = 0; i < n; i += 1) {
@@ -46,15 +63,22 @@ export interface FilterOptions {
 
 /**
  * 过滤：不同维度之间是 AND，同一维度内多个值是 OR。
+ *
+ * 取值先转成 `Set`：否则每个条目都要对参数数组做一次线性 `includes`，
+ * 数据量与筛选值同时变大时退化成 O(n·m)。无任何条件时直接原样返回，省掉一次全量遍历。
  */
 export function applyFilters(list: Quote[], opts: FilterOptions): Quote[] {
   const { categories, tags } = opts;
+  const categorySet = categories?.length ? new Set(categories) : null;
+  const tagSet = tags?.length ? new Set(tags) : null;
+  if (categorySet === null && tagSet === null) return list;
+
   return list.filter((quote) => {
-    if (categories?.length) {
-      if (!quote.category || !categories.includes(quote.category)) return false;
+    if (categorySet !== null && (!quote.category || !categorySet.has(quote.category))) {
+      return false;
     }
-    if (tags?.length) {
-      if (!quote.tags || !quote.tags.some((tag) => tags.includes(tag))) return false;
+    if (tagSet !== null && (!quote.tags || !quote.tags.some((tag) => tagSet.has(tag)))) {
+      return false;
     }
     return true;
   });
@@ -90,13 +114,19 @@ export function paginate(list: Quote[], limit: number, offset: number): Quote[] 
   return list.slice(offset, offset + limit);
 }
 
+/**
+ * 复用一个 Collator：`localeCompare` 每次比较都会重新解析 locale 与选项，
+ * 在枚举、排序上千个分类 / 标签时是可观的开销。
+ */
+const SORT_COLLATOR = new Intl.Collator('zh-Hans-CN');
+
 /** 去重、去空并按拼音排序。 */
 function collectUnique(values: readonly (string | undefined)[]): string[] {
   const set = new Set<string>();
   for (const value of values) {
     if (value) set.add(value);
   }
-  return [...set].sort((a, b) => a.localeCompare(b, 'zh-Hans-CN'));
+  return [...set].sort((a, b) => SORT_COLLATOR.compare(a, b));
 }
 
 interface EnumerableIndex {

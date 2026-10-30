@@ -44,4 +44,11 @@ export default tseslint.config(
       '@typescript-eslint/no-non-null-assertion': 'off',
     },
   },
+  {
+    // 数据维护脚本运行在 Node 中（不是 Worker），只补它需要的全局。
+    files: ['scripts/**/*.mjs'],
+    languageOptions: {
+      globals: { console: 'readonly' },
+    },
+  },
 );

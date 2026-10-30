@@ -38,6 +38,23 @@ describe('randomPick', () => {
     expect(new Set(picked.map((item) => item.id))).toEqual(new Set(LIST.map((item) => item.id)));
   });
 
+  it('n 为 1 时直接从列表中取出一条，不做无意义的全量复制', () => {
+    for (let round = 0; round < 50; round += 1) {
+      const picked = randomPick(LIST, 1);
+      expect(picked).toHaveLength(1);
+      expect(LIST).toContain(picked[0]);
+    }
+  });
+
+  it('n 远小于总量时走稀疏取样，结果互不重复', () => {
+    const big = Array.from({ length: 1000 }, (_, index) => quote(`b${index}`));
+    const picked = randomPick(big, 5);
+
+    expect(picked).toHaveLength(5);
+    expect(new Set(picked.map((item) => item.id)).size).toBe(5);
+    expect(big).toHaveLength(1000);
+  });
+
   it('n 为 0 时返回空数组', () => {
     expect(randomPick(LIST, 0)).toEqual([]);
   });

@@ -45,13 +45,13 @@ export function manifestKey(url: string): string {
 }
 
 /**
- * 默认「来源清单」地址：quotify-data 仓库根目录的 `sources.json`
+ * 默认「来源清单」地址：quotify 仓库根目录的 `sources.json`
  * （一个 JSON 字符串数组，每项是一个数据集文件地址）。
  *
  * 未显式配置 `DATA_MANIFEST_URL` 时使用它；显式配置为空字符串则表示关闭清单。
  */
 export const DEFAULT_MANIFEST_URL =
-  'https://raw.githubusercontent.com/exyonefs/quotify-data/main/sources.json';
+  'https://raw.githubusercontent.com/exyonefs/quotify/main/sources.json';
 
 /**
  * 默认静态来源：留空表示「默认不配置静态来源」，来源列表完全由清单文件解析得到。
@@ -70,9 +70,6 @@ export const DEFAULT_DATA_TTL = 300;
  */
 export const MIN_DATA_TTL = 60;
 export const MAX_DATA_TTL = 31_536_000;
-
-/** 进程内热缓存 TTL：60 秒。用于避免每个请求都重复读 KV 并全量解析数据集。 */
-export const MEMORY_CACHE_TTL_MS = 60_000;
 
 /** 外部 fetch 超时时间：5 秒。 */
 export const FETCH_TIMEOUT_MS = 5000;

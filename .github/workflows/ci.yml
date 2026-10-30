@@ -40,6 +40,10 @@ jobs:
       - name: 静态检查（ESLint）
         run: npm run lint
 
+      # 数据集 id 必须是规范的 8 位十六进制、全局唯一且文件内升序。
+      - name: 数据集 id 规范
+        run: npm run data:ids:check
+
       # 测试跑在 Workers 运行时（@cloudflare/vitest-pool-workers），无需额外服务。
       - name: 类型检查
         run: npm run typecheck

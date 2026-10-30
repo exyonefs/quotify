@@ -1,0 +1,222 @@
+{
+  "version": 1,
+  "updated_at": "2026-10-30T08:44:08Z",
+  "quotes": [
+    {
+      "id": "06c3d5c9",
+      "content": "海内存知己，天涯若比邻。",
+      "source": "送杜少府之任蜀州",
+      "author": "王勃",
+      "category": "文学",
+      "tags": ["古诗", "友情"]
+    },
+    {
+      "id": "070b7511",
+      "content": "人生如逆旅，我亦是行人。",
+      "source": "临江仙·送钱穆父",
+      "author": "苏轼",
+      "category": "文学",
+      "tags": ["古诗", "人生"]
+    },
+    {
+      "id": "076d04dd",
+      "content": "幸福的家庭都是相似的，不幸的家庭各有各的不幸。",
+      "source": "安娜·卡列尼娜",
+      "author": "列夫·托尔斯泰",
+      "category": "文学",
+      "tags": ["小说", "家庭", "经典"]
+    },
+    {
+      "id": "091b8351",
+      "content": "先天下之忧而忧，后天下之乐而乐。",
+      "source": "岳阳楼记",
+      "author": "范仲淹",
+      "category": "文学",
+      "tags": ["古文", "家国", "担当"]
+    },
+    {
+      "id": "108f5b6a",
+      "content": "落霞与孤鹜齐飞，秋水共长天一色。",
+      "source": "滕王阁序",
+      "author": "王勃",
+      "category": "文学",
+      "tags": ["古文", "山水"]
+    },
+    {
+      "id": "1e31df21",
+      "content": "To be, or not to be, that is the question.",
+      "source": "哈姆雷特",
+      "author": "威廉·莎士比亚",
+      "category": "文学",
+      "tags": ["戏剧", "生存", "经典"]
+    },
+    {
+      "id": "24eca9be",
+      "content": "春风又绿江南岸，明月何时照我还。",
+      "source": "泊船瓜洲",
+      "author": "王安石",
+      "category": "文学",
+      "tags": ["古诗", "思乡", "春天"]
+    },
+    {
+      "id": "2cb47556",
+      "content": "明月几时有？把酒问青天。",
+      "source": "水调歌头·明月几时有",
+      "author": "苏轼",
+      "category": "文学",
+      "tags": ["宋词", "中秋", "人生"]
+    },
+    {
+      "id": "36055137",
+      "content": "不识庐山真面目，只缘身在此山中。",
+      "source": "题西林壁",
+      "author": "苏轼",
+      "category": "文学",
+      "tags": ["宋诗", "视角", "哲理"]
+    },
+    {
+      "id": "37b0e372",
+      "content": "横看成岭侧成峰，远近高低各不同。",
+      "source": "题西林壁",
+      "author": "苏轼",
+      "category": "文学",
+      "tags": ["宋诗", "视角", "自然"]
+    },
+    {
+      "id": "3bb31248",
+      "content": "采菊东篱下，悠然见南山。",
+      "source": "饮酒·其五",
+      "author": "陶渊明",
+      "category": "文学",
+      "tags": ["田园", "隐逸", "意境"]
+    },
+    {
+      "id": "47f1dbb9",
+      "content": "沉舟侧畔千帆过，病树前头万木春。",
+      "source": "酬乐天扬州初逢席上见赠",
+      "author": "刘禹锡",
+      "category": "文学",
+      "tags": ["古诗", "希望", "新生"]
+    },
+    {
+      "id": "6e7fe2db",
+      "content": "夕阳无限好，只是近黄昏。",
+      "source": "登乐游原",
+      "author": "李商隐",
+      "category": "文学",
+      "tags": ["唐诗", "时光", "感慨"]
+    },
+    {
+      "id": "767c6501",
+      "content": "Life is what happens when you're busy making other plans.",
+      "source": "Beautiful Boy (歌曲)",
+      "author": "约翰·列侬",
+      "category": "文学",
+      "tags": ["人生", "意外", "歌曲"]
+    },
+    {
+      "id": "82c4ef41",
+      "content": "山重水复疑无路，柳暗花明又一村。",
+      "source": "游山西村",
+      "author": "陆游",
+      "category": "文学",
+      "tags": ["古诗", "希望", "人生"]
+    },
+    {
+      "id": "8b31b294",
+      "content": "安得广厦千万间，大庇天下寒士俱欢颜。",
+      "source": "茅屋为秋风所破歌",
+      "author": "杜甫",
+      "category": "文学",
+      "tags": ["唐诗", "家国", "理想"]
+    },
+    {
+      "id": "c465ba0d",
+      "content": "All that is gold does not glitter.",
+      "source": "魔戒",
+      "author": "J.R.R.托尔金",
+      "category": "文学",
+      "tags": ["奇幻", "真伪", "经典"]
+    },
+    {
+      "id": "cc676cd7",
+      "content": "问君能有几多愁？恰似一江春水向东流。",
+      "source": "虞美人·春花秋月何时了",
+      "author": "李煜",
+      "category": "文学",
+      "tags": ["宋词", "愁绪", "亡国"]
+    },
+    {
+      "id": "d3ea5175",
+      "content": "长风破浪会有时，直挂云帆济沧海。",
+      "source": "行路难·其一",
+      "author": "李白",
+      "category": "文学",
+      "tags": ["唐诗", "豪迈", "励志"]
+    },
+    {
+      "id": "d69aad1d",
+      "content": "纸上得来终觉浅，绝知此事要躬行。",
+      "source": "冬夜读书示子聿",
+      "author": "陆游",
+      "category": "文学",
+      "tags": ["古诗", "实践", "学习"]
+    },
+    {
+      "id": "dcdbb4f5",
+      "content": "凡是过往，皆为序章。",
+      "source": "暴风雨",
+      "author": "威廉·莎士比亚",
+      "category": "文学",
+      "tags": ["戏剧", "人生"]
+    },
+    {
+      "id": "e1ac569a",
+      "content": "人固有一死，或重于泰山，或轻于鸿毛。",
+      "source": "报任安书",
+      "author": "司马迁",
+      "category": "文学",
+      "tags": ["史书", "生死", "价值"]
+    },
+    {
+      "id": "e47da5fa",
+      "content": "Not all those who wander are lost.",
+      "source": "魔戒",
+      "author": "J.R.R.托尔金",
+      "category": "文学",
+      "tags": ["奇幻", "探索", "人生"]
+    },
+    {
+      "id": "eb35d345",
+      "content": "我们都在阴沟里，但仍有人仰望星空。",
+      "source": "温德米尔夫人的扇子",
+      "author": "奥斯卡·王尔德",
+      "category": "文学",
+      "tags": ["人生", "励志"]
+    },
+    {
+      "id": "eee148ce",
+      "content": "It does not do to dwell on dreams and forget to live.",
+      "source": "哈利·波特与魔法石",
+      "author": "J.K.罗琳",
+      "category": "文学",
+      "tags": ["奇幻", "现实", "成长"]
+    },
+    {
+      "id": "eefbe69d",
+      "content": "落红不是无情物，化作春泥更护花。",
+      "source": "己亥杂诗",
+      "author": "龚自珍",
+      "category": "文学",
+      "tags": ["古诗", "奉献", "自然"]
+    },
+    {
+      "id": "f845d150",
+      "content": "冬日到了，春天还会远吗？",
+      "source": "西风颂",
+      "author": "珀西·雪莱",
+      "category": "文学",
+      "tags": ["希望", "诗歌", "自然"]
+    }
+  ]
+}

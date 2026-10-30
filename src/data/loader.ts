@@ -3,7 +3,6 @@ import {
   FETCH_RETRY_COUNT,
   FETCH_TIMEOUT_MS,
   GITHUB_CACHE_TTL,
-  MEMORY_CACHE_TTL_MS,
   dataKey,
   isAllowedSourceUrl,
   limitSources,
@@ -122,10 +121,20 @@ function readMemory(configKey: string): LoadResult | null {
   return memory.result;
 }
 
-/** 写入热缓存并返回原结果，便于链式返回。 */
-function writeMemory(result: LoadResult, configKey: string): LoadResult {
-  memory = { result, expiresAt: Date.now() + MEMORY_CACHE_TTL_MS, configKey };
+/**
+ * 写入热缓存并返回原结果，便于链式返回。
+ *
+ * TTL 与 KV 的 `DATA_TTL` 对齐：数据集本来就只会在 KV 过期后刷新，
+ * 热缓存比它短只会让 isolate 白白重复「读 KV + 解析 + 校验」。
+ */
+function writeMemory(result: LoadResult, configKey: string, ttlMs: number): LoadResult {
+  memory = { result, expiresAt: Date.now() + ttlMs, configKey };
   return result;
+}
+
+/** 热缓存 TTL（毫秒），与数据集 TTL 保持一致。 */
+function memoryTtlMs(env: Env): number {
+  return resolveDataTtl(env) * 1000;
 }
 
 /** 由「基线来源 + 清单地址」构成的配置指纹，用于热缓存失效判断。 */
@@ -613,6 +622,17 @@ async function loadManifest(
   }
 }
 
+/** 加载单个来源并归一为「成功 / 失败」二选一，失败不会中断其余来源。 */
+async function loadOutcome(env: Env, url: string, force: boolean): Promise<SourceOutcome> {
+  try {
+    return { state: await loadSourceDeduped(env, url, force), failure: null };
+  } catch (err) {
+    const reason = err instanceof Error ? err.message : String(err);
+    console.error(`[quotify] 数据来源加载失败（${url}）：${reason}`);
+    return { state: null, failure: { url, error: reason } };
+  }
+}
+
 /**
  * 加载全部来源（基线 + 可选清单）并合并成一个统一池。
  *
@@ -621,30 +641,39 @@ async function loadManifest(
  * 这样个别上游抖动时 API 仍然可用，只少了一部分内容。
  */
 async function loadAggregate(env: Env, baseline: string[], force: boolean): Promise<LoadResult> {
-  const manifest = await loadManifest(env, force);
-  const urls = limitSources([...baseline, ...(manifest?.urls ?? [])]);
+  // 基线与来源清单互不依赖：并发启动，冷启动时省掉一次串行往返（KV / 上游）。
+  const baselineUrls = limitSources(baseline);
+  const baselineTask = Promise.all(baselineUrls.map((url) => loadOutcome(env, url, force)));
+  const [manifest, baselineOutcomes] = await Promise.all([loadManifest(env, force), baselineTask]);
 
+  const urls = limitSources([...baselineUrls, ...(manifest?.urls ?? [])]);
   if (urls.length === 0) {
     throw new UpstreamError(
       '未解析到任何数据来源：请检查 DATA_SOURCES 与 DATA_MANIFEST_URL 配置。',
     );
   }
 
-  const outcomes = await Promise.all(
-    urls.map(async (url): Promise<SourceOutcome> => {
-      try {
-        return { state: await loadSourceDeduped(env, url, force), failure: null };
-      } catch (err) {
-        const reason = err instanceof Error ? err.message : String(err);
-        console.error(`[quotify] 数据来源加载失败（${url}）：${reason}`);
-        return { state: null, failure: { url, error: reason } };
-      }
-    }),
-  );
+  // 清单里新增、且尚未包含在基线中的来源再并发补齐（已加载的不重复请求）。
+  const loadedUrls = new Set(baselineUrls);
+  const extraUrls = urls.filter((url) => !loadedUrls.has(url));
+  const extraOutcomes = await Promise.all(extraUrls.map((url) => loadOutcome(env, url, force)));
 
+  const byUrl = new Map<string, SourceOutcome>();
+  baselineUrls.forEach((url, index) => {
+    const outcome = baselineOutcomes[index];
+    if (outcome !== undefined) byUrl.set(url, outcome);
+  });
+  extraUrls.forEach((url, index) => {
+    const outcome = extraOutcomes[index];
+    if (outcome !== undefined) byUrl.set(url, outcome);
+  });
+
+  // 按 urls 的顺序收集，保证「靠前来源优先」的去重语义不受并发影响。
   const loaded: LoadedSource[] = [];
   const failures: SourceFailure[] = [];
-  for (const outcome of outcomes) {
+  for (const url of urls) {
+    const outcome = byUrl.get(url);
+    if (outcome === undefined) continue;
     if (outcome.state !== null) loaded.push(outcome.state);
     else if (outcome.failure !== null) failures.push(outcome.failure);
   }
@@ -699,7 +728,7 @@ async function loadAggregate(env: Env, baseline: string[], force: boolean): Prom
 export async function refreshAllSources(env: Env): Promise<LoadResult> {
   const baseline = resolveBaselineSources(env);
   const configKey = configKeyOf(baseline, resolveManifestUrl(env));
-  return writeMemory(await loadAggregate(env, baseline, true), configKey);
+  return writeMemory(await loadAggregate(env, baseline, true), configKey, memoryTtlMs(env));
 }
 
 /**
@@ -716,7 +745,7 @@ export async function loadDatasetWithMeta(env: Env): Promise<LoadResult> {
   // 之前这里会无条件覆写成 cached:true，把回源过的来源与失败项一并掩盖掉。
   if (hot !== null) return hot;
 
-  return writeMemory(await loadAggregate(env, baseline, false), configKey);
+  return writeMemory(await loadAggregate(env, baseline, false), configKey, memoryTtlMs(env));
 }
 
 /** 只需要合并后数据集时的便捷封装。 */
